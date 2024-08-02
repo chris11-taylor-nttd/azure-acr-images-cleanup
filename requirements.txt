@@ -1,0 +1,4 @@
+azure-identity
+azure-mgmt-containerservice
+azure-containerregistry
+pydantic

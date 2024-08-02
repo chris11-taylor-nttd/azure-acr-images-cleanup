@@ -1,0 +1,19 @@
+{
+    "kubernetes_clusters": {
+        "my_first_cluster": {
+            "name": "kube-cluster-name",
+            "subscription_id": "00000000-0000-0000-0000-000000000000",
+            "resource_group": "my-rg-name"
+        },
+        "yet_another_cluster": {
+            "name": "another-cluster",
+            "subscription_id": "00000000-0000-0000-0000-000000000001",
+            "resource_group": "another-rg"
+        }  
+    },
+    "container_registry": {
+        "url": "myregistry.azurecr.us",
+        "subscription_id": "00000000-0000-0000-0000-000000000000",
+        "resource_group": "my-registry-rg"
+    }
+}
