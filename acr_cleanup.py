@@ -163,6 +163,7 @@ def load_configuration(
 
 def get_all_running_images(
     kubernetes_clusters: list[KubernetesClusterConfiguration],
+    registry_url: str
 ) -> set[TaggedImage]:
     all_running_images = set()
     for cluster_alias, cluster in kubernetes_clusters.items():
@@ -170,7 +171,7 @@ def get_all_running_images(
             f"Retrieving images running on cluster {cluster_alias} ({cluster.name})...",
             end="",
         )
-        cluster_running_images = cluster.get_running_images("trpnonprodcr")
+        cluster_running_images = cluster.get_running_images(registry_url)
         print(f"found {len(cluster_running_images)} images.")
         all_running_images = all_running_images.union(cluster_running_images)
     print(
@@ -229,21 +230,21 @@ def filter_aged_images(
 
     aged_images = set()
     evaluation_time = datetime.now(UTC)
-
     for image in registry_images:
         age: timedelta = evaluation_time - image.created_on
         if int(age.total_seconds() // 86400) >= min_age_days:
             aged_images.add(image)
-
     return aged_images
 
 
-def main(config_file: Path, min_age_days: int = 7):
-    kubernetes_clusters, container_registry = load_configuration(
-        config_file_path=config_file
-    )
-
-    all_running_images = get_all_running_images(kubernetes_clusters=kubernetes_clusters)
+def main(config_file: Path, min_age_days: int):
+    try:
+        kubernetes_clusters, container_registry = load_configuration(
+            config_file_path=config_file
+        )
+    except Exception as e:
+        raise RuntimeError("Failed to load configuration!") from e
+    all_running_images = get_all_running_images(kubernetes_clusters=kubernetes_clusters, registry_url=container_registry.url)
     stored_images = container_registry.get_stored_images()
     inactive_images = filter_inactive_images(
         registry_images=stored_images, running_images=all_running_images
@@ -273,7 +274,7 @@ acr_cleanup.py
 
     - Be an image_name that is utilized by a Kubernetes cluster
     - Be a tag that is not utilized by a Kubernetes cluster
-    - Be at least <age> days old
+    - Be at least [age] days old
           
 Usage:
     acr_cleanup.py <config_file> [age]
@@ -306,7 +307,7 @@ if __name__ == "__main__":
         exit(-1)
 
     try:
-        main(config_file=config_file)
+        main(config_file=config_file, min_age_days=age_days)
     except Exception as e:
         print(f"Failure: {e}")
         exit(-2)
