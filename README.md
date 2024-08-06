@@ -12,6 +12,8 @@ By running this script, containers in ACR will be cleaned up if they meet the fo
 - Container image tag is not running in any of the configured Kubernetes clusters, and
 - Container image tag was created \[a configurable number of days\] prior to the cleanup run.
 
+All times handled by this script are in UTC. The configurable number of days provided is expressed as the number of 86400-second periods between the creation of the container image and evaluation time.
+
 ## Configuration File Format
 
 This script uses a JSON configuration file, demonstrated by [sample.config.json](./sample.config.json). Any number of Kubernetes clusters may be considered, and a single container registry is allowed. Kubernetes clusters and the container registry are not required to exist within the same subscription or resource group, allowing for greater flexibility when dealing with container registries that serve multiple subscriptions.
@@ -46,3 +48,15 @@ pip install -r requirements.txt
 ```
 
 This installation method is suitable for end user workstations and developers. Remember to `source` the activation script to reenter the virtual environment between reboots or when switching projects.
+
+## Usage
+
+To run the script, provide the configuration file as the first argument, and provide an optional minimum age in days to clean:
+
+```sh
+# Using my_config_file.json with the default 7 day period
+python3 acr_cleanup.py my_config_file.json
+
+# Using my_config_file.json with a 30 day minimum container age:
+python3 acr_cleanup.py my_config_file.json 30
+```
